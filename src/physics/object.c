@@ -158,3 +158,20 @@ int pointintersectobject(float *intersectpoint,float *normal,float *scale,float 
 
   return(0);
   }
+
+int pointinsideobject(float *intersectpoint,float *normal,float *point,int objectnum,int *particlelist)
+  {
+  float vec[3];
+  float startpoint[3];
+  float scale;
+
+  /* Cast a ray from outside the object towards its center through the point, */
+  /* the first edge hit is the one the point has to be pushed out through.     */
+  subtractvectors(vec,point,object[objectnum].position);
+  if (vectorlength(vec)<0.0001f)
+    return(0);
+  normalizevector(vec,vec);
+  scaleaddvectors(startpoint,object[objectnum].position,vec,object[objectnum].radius*2.0f);
+
+  return(lineintersectobject(intersectpoint,normal,&scale,startpoint,point,objectnum,particlelist));
+  }

@@ -404,6 +404,7 @@ void objectcollisionobject(int objectnum)
   int objectcount;
   int particlenum;
   int particlelist[2];
+  int deep;
   float vec[3],vec2[3]/*,vec3[3]*/;
   float intersectpoint[3];
   float normal[3];
@@ -470,8 +471,13 @@ void objectcollisionobject(int objectnum)
     for (count=0;count<object[objectnum].numofparticles;count++)
       {
       particlenum=object[objectnum].particle[count];
+      deep=0;
       //for (count2=0;count2<object[objectcount].numofcdlines;count2++)
-      if (pointintersectobject(intersectpoint,normal,&scale,particle[object[objectnum].particle[count]].position,objectcount,objectnum,particlelist))
+      if (!pointintersectobject(intersectpoint,normal,&scale,particle[object[objectnum].particle[count]].position,objectcount,objectnum,particlelist))
+      if (object[objectnum].type==OBJ_TYPE_GISH && object[objectcount].type==OBJ_TYPE_GISH)
+        //particle got too deep into the other tarball to be caught above, push it out anyway so they can't merge
+        deep=pointinsideobject(intersectpoint,normal,particle[particlenum].position,objectcount,particlelist);
+      if (deep || scale>0.0f)
         {
         //part1=object[objectcount].cdline[count2][0];
         //part2=object[objectcount].cdline[count2][1];
@@ -553,7 +559,7 @@ void objectcollisionobject(int objectnum)
           physicstemp.bond[physicstemp.numofbonds].blocky=0;
           physicstemp.numofbonds++;
 
-          if ((object[objectnum].button&1)==1 && object[objectnum].type==OBJ_TYPE_GISH)
+          if ((object[objectnum].button&1)==1 && object[objectnum].type==OBJ_TYPE_GISH && !deep)
           if (object[objectcount].type!=OBJ_TYPE_GISH || (object[objectcount].button&4)==0)
             {
             //if (!object[objectnum].particlestick[count])
