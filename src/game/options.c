@@ -44,6 +44,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // extern
 _option option;
 _control control[CONTROLS_LENGTH];
+_control menucontrol;
 _control keyboardpresets[PRESETS_LENGTH];
 _control joystickpresets[PRESETS_LENGTH];
 int numkeyboardpresets;

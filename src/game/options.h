@@ -65,6 +65,7 @@ typedef struct
 
 extern _option option;
 extern _control control[CONTROLS_LENGTH];
+extern _control menucontrol;
 extern _control keyboardpresets[PRESETS_LENGTH];
 extern _control joystickpresets[PRESETS_LENGTH];
 
