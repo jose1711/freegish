@@ -32,11 +32,50 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../game/game.h"
 #include "../game/level.h"
 #include "../game/gameobject.h"
+#include "../game/physics.h"
 #include "../game/sprite.h"
 #include "../audio/audio.h"
 #include "../math/vector.h"
 #include "../physics/bond.h"
 #include "../physics/particle.h"
+
+void gishorientation(int objectnum)
+  {
+  int count;
+  int temp;
+  float area;
+  float *vertex1,*vertex2;
+
+  //The bonds of a tarball only keep distances, so when it gets squashed flat
+  //it can pop back up mirrored (turned inside out). Its outline then faces
+  //inwards and other tarballs fall into it and merge with it. Mirrored, the
+  //tarball is the same ring of particles in reverse order, so reversing the
+  //order turns it the right way round again without moving anything.
+  area=0.0f;
+  for (count=0;count<16;count++)
+    {
+    vertex1=particle[object[objectnum].particle[count]].position;
+    vertex2=particle[object[objectnum].particle[(count+1)&15]].position;
+    area+=vertex2[0]*vertex1[1]-vertex1[0]*vertex2[1];
+    }
+  //created clockwise, so the area is positive the right way round
+  if (area>=0.0f)
+    return;
+
+  for (count=1;count<8;count++)
+    {
+    temp=object[objectnum].particle[count];
+    object[objectnum].particle[count]=object[objectnum].particle[16-count];
+    object[objectnum].particle[16-count]=temp;
+    }
+
+  //sticky contacts refer to the particles by their order
+  for (count=0;count<physicstemp.numofbonds;count++)
+    if (physicstemp.bond[count].type==5 && physicstemp.bond[count].objectnum[0]==objectnum)
+      physicstemp.bond[count].type=-1;
+  for (count=0;count<16;count++)
+    object[objectnum].particlestick[count]=0;
+  }
 
 void objectcycle(void)
   {
@@ -522,6 +561,8 @@ void objectcycle(void)
           particle[object[count].particle[count2]].mass=0.25f;
           }
         }
+
+      gishorientation(count);
       }
     if (object[count].type==OBJ_TYPE_CAR)
       {
