@@ -68,11 +68,27 @@ void drawkeyboardkeyrow(char* text, keyalias keyalias_, _control* preset, int of
     else
       drawtext("?",320,y+offset*16,16,1.0f,1.0f,1.0f,1.0f);
 }
+void drawjoystickbutton(int joysticknum, int buttonnum, int x, int y){
+    // axes and the hat are bound as virtual buttons placed after the real ones
+    char* hattexts[4] = {TXT_HAT_UP, TXT_HAT_RIGHT, TXT_HAT_DOWN, TXT_HAT_LEFT};
+    int virtualnum;
+
+    if (joysticknum!=-1)
+    if (buttonnum>=joystick[joysticknum].numofbuttons && buttonnum<joysticknumofinputs(joysticknum)){
+        virtualnum=buttonnum-joystick[joysticknum].numofbuttons;
+        if (virtualnum<joystick[joysticknum].numofaxes*2)
+            drawtext(TXT_AXIS" /i/c",x,y,16,1.0f,1.0f,1.0f,1.0f,virtualnum/2+1,(virtualnum&1) ? '+' : '-');
+        else
+            drawtext(hattexts[virtualnum-joystick[joysticknum].numofaxes*2],x,y,16,1.0f,1.0f,1.0f,1.0f);
+        return;
+    }
+    drawtext(TXT_BUTTON" /i",x,y,16,1.0f,1.0f,1.0f,1.0f,buttonnum+1);
+}
 void drawjoystickkeyrow(char* text, keyalias keyalias_, _control* preset, int offset, int menuitem_offset, int y){
     drawtext(text,0,y+offset*16,16,0.75f,0.75f,0.75f,1.0f);
     if (!menuitem[menuitem_offset+offset].active){
       if (preset->button[offset]!=-1)
-        drawtext(TXT_BUTTON" /i",320,y+offset*16,16,1.0f,1.0f,1.0f,1.0f,preset->button[offset]+1);
+        drawjoystickbutton(preset->joysticknum,preset->button[offset],320,y+offset*16);
       else
         drawtext(TXT_AXIS,320,y+offset*16,16,1.0f,1.0f,1.0f,1.0f);
       }
@@ -101,7 +117,7 @@ void bindjoystickkeys(_control* preset, int first_corresponding_joystick_item){
     if (preset->joysticknum!=-1)
     for (int count=0;count<KEYALIAS_LENGTH;count++)
     if (menuitem[first_corresponding_joystick_item + count].active){
-        for (int count2=0;count2<joystick[preset->joysticknum].numofbuttons;count2++)
+        for (int count2=0;count2<joysticknumofinputs(preset->joysticknum);count2++)
         if (joystick[preset->joysticknum].button[count2] && !prevjoystick[preset->joysticknum].button[count2]){
             preset->button[count]=count2;
             menuitem[first_corresponding_joystick_item + count].active=0;
