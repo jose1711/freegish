@@ -60,7 +60,49 @@ void gishorientation(int objectnum)
     }
   //created clockwise, so the area is positive the right way round
   if (area>=0.0f)
+    {
+    //outline crossing itself (twisted into a figure eight): swap the crossing
+    //edges (2-opt) by reversing the particles between them
+    int c2,c3,lo,hi,found=0;
+    float *p1,*p2,*p3,*p4,d1,d2,d3,d4;
+    for (c2=0;c2<16 && !found;c2++)
+    for (c3=c2+2;c3<16 && !found;c3++)
+      {
+      if (c2==0 && c3==15)
+        continue;
+      p1=particle[object[objectnum].particle[c2]].position;
+      p2=particle[object[objectnum].particle[(c2+1)&15]].position;
+      p3=particle[object[objectnum].particle[c3]].position;
+      p4=particle[object[objectnum].particle[(c3+1)&15]].position;
+      d1=(p2[0]-p1[0])*(p3[1]-p1[1])-(p2[1]-p1[1])*(p3[0]-p1[0]);
+      d2=(p2[0]-p1[0])*(p4[1]-p1[1])-(p2[1]-p1[1])*(p4[0]-p1[0]);
+      d3=(p4[0]-p3[0])*(p1[1]-p3[1])-(p4[1]-p3[1])*(p1[0]-p3[0]);
+      d4=(p4[0]-p3[0])*(p2[1]-p3[1])-(p4[1]-p3[1])*(p2[0]-p3[0]);
+      if (d1*d2<0.0f && d3*d4<0.0f)
+        {
+        found=1;
+        lo=c2+1;
+        hi=c3;
+        }
+      }
+    if (found)
+      {
+      while (lo<hi)
+        {
+        temp=object[objectnum].particle[lo];
+        object[objectnum].particle[lo]=object[objectnum].particle[hi];
+        object[objectnum].particle[hi]=temp;
+        lo++;
+        hi--;
+        }
+      for (count=0;count<physicstemp.numofbonds;count++)
+        if (physicstemp.bond[count].type==5 && physicstemp.bond[count].objectnum[0]==objectnum)
+          physicstemp.bond[count].type=-1;
+      for (count=0;count<16;count++)
+        object[objectnum].particlestick[count]=0;
+      }
     return;
+    }
 
   for (count=1;count<8;count++)
     {
